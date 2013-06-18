@@ -6,9 +6,16 @@ import org.fusesource.scalate.{ TemplateEngine, Binding }
 import org.fusesource.scalate.layout.DefaultLayoutStrategy
 import javax.servlet.http.HttpServletRequest
 import collection.mutable
+import org.scalatra.json.JacksonJsonSupport
+import org.json4s.DefaultFormats
 
-trait LibraryStack extends ScalatraServlet with ScalateSupport {
+trait LibraryStack extends ScalatraServlet with ScalateSupport with JacksonJsonSupport {
 
+  implicit val jsonFormats = DefaultFormats
+
+  before("""/api/v1/.*""".r) {
+    contentType = "application/json"
+  }
   /* wire up the precompiled templates */
   override protected def defaultTemplatePath: List[String] = List("/WEB-INF/templates/views")
   override protected def createTemplateEngine(config: ConfigT) = {
