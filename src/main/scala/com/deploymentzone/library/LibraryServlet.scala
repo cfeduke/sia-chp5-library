@@ -108,9 +108,12 @@ class LibraryServlet extends LibraryStack {
           account <- AccountRepository.find(id)
           currentEmail <- account.emails.toSeq.lift(idx)
         } yield {
-          val emails = SortedSet(account.emails.toSeq.updated(idx, email):_*)@
-          val account = account.
-        })
+          val emails = SortedSet(account.emails.toSeq.updated(idx, email):_*).toList
+          val updatedAccount = account.copy(emails = emails)
+          AccountRepository.update(updatedAccount)
+        }) getOrElse halt(404)
+
+      case _ => halt(500)
     }
   }
 }
