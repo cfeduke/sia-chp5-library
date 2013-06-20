@@ -116,4 +116,15 @@ class LibraryServlet extends LibraryStack {
       case _ => halt(500)
     }
   }
+
+  get("/api/v1/accounts/:id/emails") {
+    (for {
+      account <- AccountRepository.find(params("id"))
+      email <- account.emails
+    } yield JString(email)) getOrElse halt(404)
+  }
+
+  get("/api/v1/accounts/:id/emails/count") {
+    AccountRepository.find(params("id")).map(a => JInt(a.emails.size)).getOrElse((halt(404)))
+  }
 }
