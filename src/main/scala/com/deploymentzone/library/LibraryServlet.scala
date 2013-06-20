@@ -4,6 +4,7 @@ import org.json4s.JsonAST.{JString, JObject}
 import org.json4s.JsonDSL._
 import com.deploymentzone.library.domain.{Address, AccountRepository}
 import org.scalatra.Ok
+import scala.collection.immutable.SortedSet
 
 class LibraryServlet extends LibraryStack {
 
@@ -95,5 +96,21 @@ class LibraryServlet extends LibraryStack {
       val updatedAccount = account.copy(emails = account.emails diff (email :: Nil))
       AccountRepository.update(updatedAccount)
     }) getOrElse halt(404)
+  }
+
+  put("/api/v1/accounts/:id/emails/:index") {
+    parsedBody match {
+      case JString(email) =>
+
+        (for {
+          id <- params.get("id")
+          idx <- params.getAs[Int]("index")
+          account <- AccountRepository.find(id)
+          currentEmail <- account.emails.toSeq.lift(idx)
+        } yield {
+          val emails = SortedSet(account.emails.toSeq.updated(idx, email):_*)@
+          val account = account.
+        })
+    }
   }
 }
