@@ -56,4 +56,44 @@ class LibraryServlet extends LibraryStack {
   delete("/api/v1/accounts/:id") {
     AccountRepository.remove(params("id"))
   }
+
+  put("/api/v1/accounts/:id/address") {
+    val account = AccountRepository.find(params("id")).getOrElse(halt(404))
+
+    parsedBody match {
+      case JObject(
+      ("street", JString(state)) ::
+        ("city", JString(city)) ::
+        ("country", JString(country)) :: Nil) =>
+
+        val updated = account.copy(address = Address(state, city, country))
+        AccountRepository.update(updated)
+
+      case _ => halt(500, "")
+    }
+  }
+
+  post("/api/v1/accounts/:id/emails") {
+    parsedBody match {
+      case JString(email) =>
+        val account = AccountRepository.find(params("id")).getOrElse(halt(404))
+
+        val updatedAccount = account.copy(emails = account.emails :+ email)
+        AccountRepository.update(updatedAccount)
+
+      case _ => halt(404)
+    }
+  }
+
+  delete("/api/v1/accounts/:id/emails/:index") {
+    (for {
+      id <- params.get("id")
+      idx <- params.getAs[Int]("index")
+      account <- AccountRepository.find(id)
+      email <- account.emails.toSeq.lift(idx)
+    } yield {
+      val updatedAccount = account.copy(emails = account.emails diff (email :: Nil))
+      AccountRepository.update(updatedAccount)
+    }) getOrElse halt(404)
+  }
 }
