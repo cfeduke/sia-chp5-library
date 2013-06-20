@@ -1,6 +1,6 @@
 package com.deploymentzone.library
 
-import org.json4s.JsonAST.{JString, JObject}
+import org.json4s.JsonAST._
 import org.json4s.JsonDSL._
 import com.deploymentzone.library.domain.{Address, AccountRepository}
 import org.scalatra.Ok
@@ -42,13 +42,13 @@ class LibraryServlet extends LibraryStack {
 
       case Some(account) =>
 
-        (("id" -> account.id) ~
+        ("id" -> account.id) ~
           ("primaryEmail" -> account.primaryEmail) ~
           ("fallbackEmails" -> account.emails.map(_.toString)) ~
           ("address" ->
             ("street" -> account.address.street) ~
               ("city" -> account.address.city) ~
-              ("country" -> account.address.country)))
+              ("country" -> account.address.country))
 
       case _ => halt(404)
     }
@@ -120,11 +120,11 @@ class LibraryServlet extends LibraryStack {
   get("/api/v1/accounts/:id/emails") {
     (for {
       account <- AccountRepository.find(params("id"))
-      email <- account.emails
-    } yield JString(email)) getOrElse halt(404)
+      emails <- Option(account.emails)
+    } yield JArray(emails.map(e => JString(e)))) getOrElse halt(404)
   }
 
   get("/api/v1/accounts/:id/emails/count") {
-    AccountRepository.find(params("id")).map(a => JInt(a.emails.size)).getOrElse((halt(404)))
+    AccountRepository.find(params("id")).map(a => JInt(a.emails.size)).getOrElse(halt(404))
   }
 }
