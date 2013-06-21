@@ -8,10 +8,11 @@ import javax.servlet.http.HttpServletRequest
 import collection.mutable
 import org.scalatra.json.JacksonJsonSupport
 import org.json4s.DefaultFormats
+import com.deploymentzone.library.domain.serialization.AccountSerializer
 
 trait LibraryStack extends ScalatraServlet with ScalateSupport with JacksonJsonSupport {
 
-  implicit val jsonFormats = DefaultFormats
+  implicit val jsonFormats = DefaultFormats + new AccountSerializer
 
   before("""/api/v1/.*""".r) {
     contentType = "application/json"

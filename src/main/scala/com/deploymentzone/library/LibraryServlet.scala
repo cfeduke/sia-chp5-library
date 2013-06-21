@@ -3,7 +3,7 @@ package com.deploymentzone.library
 import org.json4s.JsonAST._
 import org.json4s.JsonDSL._
 import com.deploymentzone.library.domain.{Address, AccountRepository}
-import org.scalatra.Ok
+import org.scalatra.{Ok, NotFound}
 import scala.collection.immutable.SortedSet
 
 class LibraryServlet extends LibraryStack {
@@ -27,8 +27,8 @@ class LibraryServlet extends LibraryStack {
   }
 
   get("/api/v1/initialize") {
-    AccountRepository.create("1234", "charles.feduke@gmail.com", new Address("15505 Spotswood", "Fredericksburg", "US"))
-    Ok
+    val account = AccountRepository.create("1234", "charles.feduke@gmail.com", new Address("15505 Spotswood", "Fredericksburg", "US"))
+    Ok(account.id)
   }
 
   get("/api/v1/accounts") {
@@ -128,4 +128,20 @@ class LibraryServlet extends LibraryStack {
     AccountRepository.find(params("id")).map(a => JInt(a.emails.size)).getOrElse(halt(404))
   }
 
+  get("/api/v1/accounts/:id", acceptHeader.contains("application/xml")) {
+    AccountRepository.find(params("id")).map { account =>
+      <account>
+        <id>{account.id}</id>
+        <primaryEmail>{account.primaryEmail}</primaryEmail>
+        <fallbackEmails>
+          { for (email <- account.emails) yield <email>{email}</email> }
+        </fallbackEmails>
+        <address>
+          <street>{account.address.street}</street>
+          <city>{account.address.city}</city>
+          <country>{account.address.country}</country>
+        </address>
+      </account>
+    } getOrElse NotFound(None)
+  }
 }
