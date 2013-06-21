@@ -127,4 +127,5 @@ class LibraryServlet extends LibraryStack {
   get("/api/v1/accounts/:id/emails/count") {
     AccountRepository.find(params("id")).map(a => JInt(a.emails.size)).getOrElse(halt(404))
   }
+
 }
