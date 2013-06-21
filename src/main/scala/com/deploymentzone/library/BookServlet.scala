@@ -4,6 +4,7 @@ import org.json4s.JsonAST._
 import org.json4s.JsonDSL._
 import com.deploymentzone.library.domain.{Book, BookRepository}
 import org.scalatra.{NotFound, Ok}
+import scala.xml.XML
 
 class BookServlet extends LibraryStack {
   val bookRepo = BookRepository
@@ -35,5 +36,15 @@ class BookServlet extends LibraryStack {
 
   delete("/api/v1/books/:id") {
     if (bookRepo.delete(params("id"))) Ok else NotFound
+  }
+
+  post("/api/v1/books/prices") {
+    val el = XML.loadString(request.body)
+
+    val prices: Seq[(String, Double)] = for {
+      book <- el \ "book"
+      title <- book \ "title"
+      price <- book \ "price"
+    } yield (title.text, price.text.toDouble)
   }
 }
